@@ -1,0 +1,67 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+import java.util.Scanner;
+
+class Senha{
+    private String senha;
+    public int count = 0;
+    
+    public Senha(){}
+    public Senha(String senha){
+        this.senha = senha;
+    }
+    
+    public boolean entraSenha(String senha){
+        if(!(count < 3)) {
+            System.out.println("Número máximo de tentivas excedido!");
+            return false;
+        }
+        boolean senhaCorreta = senha.equals(this.senha);
+        if(senhaCorreta){
+            count = 0;
+            System.out.println("Senha correta!!!");
+        } else {
+            count++;
+            System.out.println("Senha Incorreta");
+        }
+        return senhaCorreta;
+    }
+    public void trocarSenha(String senha, String novaSenha) {
+        boolean verifica = this.entraSenha(senha);
+        if(!verifica){
+            return;
+        } else {
+            this.senha = novaSenha;
+        }
+    }
+    public void setSenha(String senha){
+        this.senha = senha;
+    }
+    public String getSenha(){
+        return this.senha;
+    }
+}
+
+public class Main
+{
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		Senha senha = new Senha();
+		System.out.print("Digite a senha a ser criada com bolinhos de bacalhau: ");
+		String senhaUsr = sc.next();
+		senha.setSenha(senhaUsr);
+		
+		boolean result = true;
+		while(senha.count < 4 ){
+		    System.out.print("\nDigite a senha que vc criou e tente não errar: ");
+		    String senhaTentiva = sc.next();
+		    result = senha.entraSenha(senhaTentiva);
+		}
+	}
+}
