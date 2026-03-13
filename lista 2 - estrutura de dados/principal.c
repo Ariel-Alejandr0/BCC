@@ -31,8 +31,15 @@ int main(){
     //remove o 5
     listaEncadeada = sllRetira(listaEncadeada, 5.0);
     sllImprime(listaEncadeada);
+    printf("\n");//só para quebrar linha
+
+    listaEncadeada = sllInsereFim(listaEncadeada, 0.0);
+    sllImprime(listaEncadeada);
+    printf("\n");//só para quebrar linha
 
     listaEncadeada = sllLibera(listaEncadeada);
     sllImprime(listaEncadeada); //não imprime nada
+
+
     return 0;
 }
