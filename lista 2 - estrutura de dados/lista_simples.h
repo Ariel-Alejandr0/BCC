@@ -17,4 +17,10 @@ int sllComprimento(NoLista *head);
 NoLista *sllUltimo(NoLista *head);
 NoLista *sllRetira(NoLista *head, float v);
 NoLista *sllLibera(NoLista *head);
+NoLista *sllInsereFim(NoLista *head, float v);
+int sllIgual(NoLista *lista1, NoLista *lista2);
+void sllImprimeRecursivo(NoLista *head);
+NoLista *sllRetiraRecursivo(NoLista *head, float v);
+int sllComprimentoRecursivo(NoLista *head);
+int sllIgualRecursivo(NoLista *lista1, NoLista *lista2);
 #endif
