@@ -23,4 +23,5 @@ void sllImprimeRecursivo(NoLista *head);
 NoLista *sllRetiraRecursivo(NoLista *head, float v);
 int sllComprimentoRecursivo(NoLista *head);
 int sllIgualRecursivo(NoLista *lista1, NoLista *lista2);
+NoLista* clone_list(NoLista* head); //Função auxiliar para criar uma cópia da lista encadeada
 #endif

@@ -19,6 +19,7 @@ NoLista *sllInsere(NoLista *head, int v){
 }
 void sllImprime(NoLista *head){
     if(head == NULL){
+        printf("\n");//só para quebrar linha
         return;
     }
 
@@ -144,4 +145,17 @@ int sllComprimentoRecursivo(NoLista *head){
 }
 int sllIgualRecursivo(NoLista *lista1, NoLista *lista2){
     return sllIgual(lista1, lista2);
+}
+NoLista* clone_list(NoLista* head) {
+    if (!head) return NULL;
+    NoLista *new_head = NULL, *new_tail = NULL;
+    for (NoLista *p = head; p != NULL; p = p->prox) {
+        NoLista *n = malloc(sizeof(NoLista));
+        if (!n) return NULL; // omitir tratamento de erro completo
+        n->info = p->info;     // se info for struct/ponteiro, clone conforme necessário
+        n->prox = NULL;
+        if (!new_head) new_head = new_tail = n;
+        else { new_tail->prox = n; new_tail = n; }
+    }
+    return new_head;
 }

@@ -37,9 +37,29 @@ int main(){
     sllImprime(listaEncadeada);
     printf("\n");//só para quebrar linha
 
+    
+    //criando a lista cópia;
+    NoLista *copiaListaEncadeada = clone_list(listaEncadeada);
+    printf("Imprimindo a cópia:\n");//só para quebrar linha
+    sllImprime(copiaListaEncadeada);
+    
+    sllIgual(listaEncadeada, copiaListaEncadeada) == 1 ? printf("As listas são iguais\n") : printf("As listas são diferentes\n");
+    listaEncadeada = sllInsereFim(listaEncadeada, -1.0);
+    printf("Após operção de inserir ao final de uma lista Encadeada Original: \n");
+    sllIgual(listaEncadeada, copiaListaEncadeada) == 1 ? printf("As listas são iguais\n") : printf("As listas são diferentes\n");
+    sllImprimeRecursivo(listaEncadeada);
+    sllImprimeRecursivo(copiaListaEncadeada);
+
+    printf("retirando o elemento -1.0 da lista original: \n");
+    listaEncadeada = sllRetiraRecursivo(listaEncadeada, -1.0);
+    sllImprimeRecursivo(listaEncadeada);
+    sllImprimeRecursivo(copiaListaEncadeada);
+
+    printf("Imprimindo comprimento das listas:\n");
+    printf("Comprimento da lista original: %i\n", sllComprimentoRecursivo(listaEncadeada));
+    printf("Comprimento da lista cópia: %i\n", sllComprimentoRecursivo(copiaListaEncadeada));
+
     listaEncadeada = sllLibera(listaEncadeada);
     sllImprime(listaEncadeada); //não imprime nada
-
-
     return 0;
 }
