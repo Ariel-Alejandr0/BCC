@@ -2,6 +2,7 @@ package grafos;
 
 import estruturas.Aresta;
 import estruturas.Digrafo;
+import estruturas.Grafo;
 import estruturas.Vertice;
 
 import java.util.List;
@@ -9,284 +10,208 @@ import java.util.List;
 public class App {
 
     public static void main(String[] args) {
-        //ATENÇÃO: Estes testes Foram gerados via IA.
-        System.out.println("=================================");
-        System.out.println("       TESTES DE DIGRAFO");
-        System.out.println("=================================");
+        //Atenção: bateria de testes criada com IA
+        testarGrafo();
+        testarDigrafo();
 
-        Digrafo grafo = new Digrafo();
+    }
 
-        // =========================================================
-        // 1. TESTE insereV()
-        // =========================================================
+    public static void testarGrafo() {
 
-        System.out.println("\n--- 1. insereV() ---");
+        System.out.println("\n====================================");
+        System.out.println("      TESTE GRAFO NÃO DIRECIONADO");
+        System.out.println("====================================");
 
-        Vertice a = grafo.insereV();
-        Vertice b = grafo.insereV();
-        Vertice c = grafo.insereV();
-        Vertice d = grafo.insereV();
+        Grafo grafo = new Grafo();
 
-        System.out.println("Ordem esperada: 4");
-        System.out.println("Ordem obtida:   " + grafo.getOrdem());
+        Vertice v1 = grafo.insereV();
+        Vertice v2 = grafo.insereV();
+        Vertice v3 = grafo.insereV();
+        Vertice v4 = grafo.insereV();
 
+        Aresta a1 = grafo.insereA(v1, v2);
+        Aresta a2 = grafo.insereA(v1, v3);
+        Aresta a3 = grafo.insereA(v2, v3);
+        Aresta a4 = grafo.insereA(v3, v4);
 
-        // =========================================================
-        // 2. TESTE insereA()
-        // =========================================================
-
-        System.out.println("\n--- 2. insereA() ---");
-
-        // A -> B
-        Aresta ab = grafo.insereA(a, b);
-
-        // A -> C
-        Aresta ac = grafo.insereA(a, c);
-
-        // B -> C
-        Aresta bc = grafo.insereA(b, c);
-
-        // C -> A
-        Aresta ca = grafo.insereA(c, a);
-
-        // D -> C
-        Aresta dc = grafo.insereA(d, c);
-
-        System.out.println("Arestas esperadas: 5");
-        System.out.println("Arestas obtidas:   " + grafo.getTamanho());
-
-
-        // =========================================================
-        // 3. TESTE getOrdem()
-        // =========================================================
-
-        System.out.println("\n--- 3. getOrdem() ---");
-
+        System.out.println("\n--- getOrdem() ---");
         System.out.println("Esperado: 4");
-        System.out.println("Obtido:   " + grafo.getOrdem());
+        System.out.println("Obtido: " + grafo.getOrdem());
 
+        System.out.println("\n--- getTamanho() ---");
+        System.out.println("Esperado: 4");
+        System.out.println("Obtido: " + grafo.getTamanho());
 
-        // =========================================================
-        // 4. TESTE getTamanho()
-        // =========================================================
+        System.out.println("\n--- vertices() ---");
+        for (Vertice v : grafo.vertices()) {
+            System.out.println(v);
+        }
 
-        System.out.println("\n--- 4. getTamanho() ---");
+        System.out.println("\n--- arestas() ---");
+        for (Aresta a : grafo.arestas()) {
+            System.out.println(a);
+        }
 
+        System.out.println("\n--- adj(V1) ---");
+        for (Vertice v : grafo.adj(v1)) {
+            System.out.println(v);
+        }
+
+        System.out.println("\n--- getA(V1,V2) ---");
+        System.out.println(grafo.getA(v1, v2));
+
+        System.out.println("\n--- getA(V2,V1) ---");
+        System.out.println(grafo.getA(v2, v1));
+
+        System.out.println("\n--- grau(V1) ---");
+        System.out.println("Esperado: 2");
+        System.out.println("Obtido: " + grafo.grauV(v1));
+
+        System.out.println("\n--- grau(V3) ---");
+        System.out.println("Esperado: 3");
+        System.out.println("Obtido: " + grafo.grauV(v3));
+
+        System.out.println("\n--- verticesA(A1) ---");
+        List<Vertice> verticesA = grafo.verticesA(a1);
+        System.out.println(verticesA.get(0));
+        System.out.println(verticesA.get(1));
+
+        System.out.println("\n--- oposto(V1,A1) ---");
+        System.out.println(grafo.oposto(v1, a1));
+
+        System.out.println("\n--- oposto(V2,A1) ---");
+        System.out.println(grafo.oposto(v2, a1));
+
+        System.out.println("\n--- arestasV(V3) ---");
+        for (Aresta a : grafo.arestasV(v3)) {
+            System.out.println(a);
+        }
+
+        System.out.println("\n--- toString() ---");
+        System.out.println(grafo);
+
+        System.out.println("\n--- removeA(A1) ---");
+        grafo.removeA(a1);
+        System.out.println("Arestas esperadas: 3");
+        System.out.println("Arestas obtidas: " + grafo.getTamanho());
+
+        System.out.println("\n--- removeV(V3) ---");
+        grafo.removeV(v3);
+
+        System.out.println("Vértices esperados: 3");
+        System.out.println("Vértices obtidos: " + grafo.getOrdem());
+
+        System.out.println("Arestas esperadas: 0");
+        System.out.println("Arestas obtidas: " + grafo.getTamanho());
+
+        System.out.println("\n--- toString() final ---");
+        System.out.println(grafo);
+    }
+
+    public static void testarDigrafo() {
+
+        System.out.println("\n====================================");
+        System.out.println("             TESTE DIGRAFO");
+        System.out.println("====================================");
+
+        Digrafo digrafo = new Digrafo();
+
+        Vertice v1 = digrafo.insereV();
+        Vertice v2 = digrafo.insereV();
+        Vertice v3 = digrafo.insereV();
+        Vertice v4 = digrafo.insereV();
+
+        Aresta a1 = digrafo.insereA(v1, v2);
+        Aresta a2 = digrafo.insereA(v1, v3);
+        Aresta a3 = digrafo.insereA(v2, v3);
+        Aresta a4 = digrafo.insereA(v3, v1);
+        Aresta a5 = digrafo.insereA(v4, v3);
+
+        System.out.println("\n--- getOrdem() ---");
+        System.out.println("Esperado: 4");
+        System.out.println("Obtido: " + digrafo.getOrdem());
+
+        System.out.println("\n--- getTamanho() ---");
         System.out.println("Esperado: 5");
-        System.out.println("Obtido:   " + grafo.getTamanho());
+        System.out.println("Obtido: " + digrafo.getTamanho());
 
-
-        // =========================================================
-        // 5. TESTE vertices()
-        // =========================================================
-
-        System.out.println("\n--- 5. vertices() ---");
-
-        List<Vertice> vertices = grafo.vertices();
-
-        System.out.println("Quantidade esperada: 4");
-        System.out.println("Quantidade obtida:   " + vertices.size());
-
-        for (Vertice v : vertices) {
+        System.out.println("\n--- vertices() ---");
+        for (Vertice v : digrafo.vertices()) {
             System.out.println(v);
         }
 
-
-        // =========================================================
-        // 6. TESTE arestas()
-        // =========================================================
-
-        System.out.println("\n--- 6. arestas() ---");
-
-        List<Aresta> arestas = grafo.arestas();
-
-        System.out.println("Quantidade esperada: 5");
-        System.out.println("Quantidade obtida:   " + arestas.size());
-
-        for (Aresta e : arestas) {
-            System.out.println(
-                    e.getU() + " -> " + e.getV()
-            );
+        System.out.println("\n--- arestas() ---");
+        for (Aresta a : digrafo.arestas()) {
+            System.out.println(a);
         }
 
-
-        // =========================================================
-        // 7. TESTE adj(v)
-        // =========================================================
-
-        System.out.println("\n--- 7. adj(v) ---");
-
-        System.out.println("Adjacentes de A:");
-
-        for (Vertice v : grafo.adj(a)) {
+        System.out.println("\n--- adj(V1) ---");
+        for (Vertice v : digrafo.adj(v1)) {
             System.out.println(v);
         }
 
-        // Esperado: B e C
+        System.out.println("\n--- getA(V1,V2) ---");
+        System.out.println(digrafo.getA(v1, v2));
 
+        System.out.println("\n--- getA(V2,V1) ---");
+        System.out.println(digrafo.getA(v2, v1));
 
-        // =========================================================
-        // 8. TESTE getA(u, v)
-        // =========================================================
+        System.out.println("\n--- grauE(V1) ---");
+        System.out.println("Esperado: 1");
+        System.out.println("Obtido: " + digrafo.grauE(v1));
 
-        System.out.println("\n--- 8. getA(u, v) ---");
+        System.out.println("\n--- grauS(V1) ---");
+        System.out.println("Esperado: 2");
+        System.out.println("Obtido: " + digrafo.grauS(v1));
 
-        Aresta resultado = grafo.getA(a, b);
+        System.out.println("\n--- grauE(V3) ---");
+        System.out.println("Esperado: 3");
+        System.out.println("Obtido: " + digrafo.grauE(v3));
 
-        System.out.println("getA(A, B):");
-        System.out.println(resultado);
+        System.out.println("\n--- grauS(V3) ---");
+        System.out.println("Esperado: 1");
+        System.out.println("Obtido: " + digrafo.grauS(v3));
 
-        System.out.println("\ngetA(B, A):");
-        System.out.println(grafo.getA(b, a));
+        System.out.println("\n--- verticesA(A1) ---");
+        List<Vertice> verticesA = digrafo.verticesA(a1);
+        System.out.println("Origem: " + verticesA.get(0));
+        System.out.println("Destino: " + verticesA.get(1));
 
-        // A -> B existe
-        // B -> A não existe
+        System.out.println("\n--- oposto(V1,A1) ---");
+        System.out.println(digrafo.oposto(v1, a1));
 
+        System.out.println("\n--- oposto(V2,A1) ---");
+        System.out.println(digrafo.oposto(v2, a1));
 
-        // =========================================================
-        // 9. TESTE grauE()
-        // =========================================================
-
-        System.out.println("\n--- 9. grauE(v) ---");
-
-        System.out.println("grauE(A) esperado: 1");
-        System.out.println("grauE(A) obtido:   " + grafo.grauE(a));
-
-        System.out.println("grauE(C) esperado: 3");
-        System.out.println("grauE(C) obtido:   " + grafo.grauE(c));
-
-
-        // =========================================================
-        // 10. TESTE grauS()
-        // =========================================================
-
-        System.out.println("\n--- 10. grauS(v) ---");
-
-        System.out.println("grauS(A) esperado: 2");
-        System.out.println("grauS(A) obtido:   " + grafo.grauS(a));
-
-        System.out.println("grauS(C) esperado: 1");
-        System.out.println("grauS(C) obtido:   " + grafo.grauS(c));
-
-
-        // =========================================================
-        // 11. TESTE verticesA()
-        // =========================================================
-
-        System.out.println("\n--- 11. verticesA(e) ---");
-
-        List<Vertice> extremos = grafo.verticesA(ab);
-
-        System.out.println("Origem:  " + extremos.get(0));
-        System.out.println("Destino: " + extremos.get(1));
-
-
-        // =========================================================
-        // 12. TESTE oposto()
-        // =========================================================
-
-        System.out.println("\n--- 12. oposto(v, e) ---");
-
-        System.out.println("oposto(A, A->B):");
-        System.out.println(grafo.oposto(a, ab));
-
-        System.out.println("\noposto(B, A->B):");
-        System.out.println(grafo.oposto(b, ab));
-
-
-        // =========================================================
-        // 13. TESTE arestasE()
-        // =========================================================
-
-        System.out.println("\n--- 13. arestasE(v) ---");
-
-        System.out.println("Arestas que entram em C:");
-
-        for (Aresta e : grafo.arestasE(c)) {
-            System.out.println(
-                    e.getU() + " -> " + e.getV()
-            );
+        System.out.println("\n--- arestasE(V3) ---");
+        for (Aresta a : digrafo.arestasE(v3)) {
+            System.out.println(a);
         }
 
-        // Esperado:
-        // A -> C
-        // B -> C
-        // D -> C
-
-
-        // =========================================================
-        // 14. TESTE arestasS()
-        // =========================================================
-
-        System.out.println("\n--- 14. arestasS(v) ---");
-
-        System.out.println("Arestas que saem de A:");
-
-        for (Aresta e : grafo.arestasS(a)) {
-            System.out.println(
-                    e.getU() + " -> " + e.getV()
-            );
+        System.out.println("\n--- arestasS(V1) ---");
+        for (Aresta a : digrafo.arestasS(v1)) {
+            System.out.println(a);
         }
 
-        // Esperado:
-        // A -> B
-        // A -> C
+        System.out.println("\n--- toString() ---");
+        System.out.println(digrafo);
 
+        System.out.println("\n--- removeA(A1) ---");
+        digrafo.removeA(a1);
 
-        // =========================================================
-        // 15. TESTE removeA()
-        // =========================================================
+        System.out.println("Arestas esperadas: 4");
+        System.out.println("Arestas obtidas: " + digrafo.getTamanho());
 
-        System.out.println("\n--- 15. removeA() ---");
+        System.out.println("\n--- removeV(V3) ---");
+        digrafo.removeV(v3);
 
-        System.out.println("Antes: " + grafo.getTamanho());
+        System.out.println("Vértices esperados: 3");
+        System.out.println("Vértices obtidos: " + digrafo.getOrdem());
 
-        grafo.removeA(ab);
+        System.out.println("Arestas esperadas: 0");
+        System.out.println("Arestas obtidas: " + digrafo.getTamanho());
 
-        System.out.println("Depois: " + grafo.getTamanho());
-
-        System.out.println("Esperado: 4");
-
-
-        // =========================================================
-        // 16. TESTE removeV()
-        // =========================================================
-
-        System.out.println("\n--- 16. removeV() ---");
-
-        System.out.println("Antes:");
-
-        System.out.println("Vértices: " + grafo.getOrdem());
-        System.out.println("Arestas:  " + grafo.getTamanho());
-
-        // Remover C.
-        // C possui:
-        //
-        // A -> C
-        // B -> C
-        // C -> A
-        // D -> C
-        //
-        // Todas devem ser removidas.
-
-        grafo.removeV(c);
-
-        System.out.println("\nDepois de remover C:");
-
-        System.out.println("Vértices: " + grafo.getOrdem());
-        System.out.println("Arestas:  " + grafo.getTamanho());
-
-        System.out.println("\nEsperado:");
-        System.out.println("Vértices: 3");
-        System.out.println("Arestas:  0");
-
-
-        // =========================================================
-        // FIM
-        // =========================================================
-
-        System.out.println("\n=================================");
-        System.out.println("       FIM DOS TESTES");
-        System.out.println("=================================");
+        System.out.println("\n--- toString() final ---");
+        System.out.println(digrafo);
     }
 }

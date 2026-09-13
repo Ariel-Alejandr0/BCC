@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Grafo {
+    private int proximoId = 1;
+    private int proximoIdAresta = 1;
     private List<Vertice> vertices = new ArrayList<Vertice>();
     private List<Aresta> cacheArestas = new ArrayList<Aresta>();
 
@@ -22,7 +24,8 @@ public class Grafo {
     }
 
     public Vertice insereV(){
-        Vertice novoVertice = new Vertice();
+        Vertice novoVertice = new Vertice(proximoId);
+        proximoId++;
         vertices.add(novoVertice);
         return novoVertice;
     }
@@ -48,7 +51,8 @@ public class Grafo {
             System.out.println("Vertice v não pertence ao grafo.");
             return null;
         }
-        Aresta novaAresta = new Aresta(u, v);
+        Aresta novaAresta = new Aresta(proximoIdAresta, u, v);
+        proximoIdAresta++;
         u.getArestas().add(novaAresta);
         v.getArestas().add(novaAresta);
         cacheArestas.add(novaAresta);
@@ -113,5 +117,21 @@ public class Grafo {
             return null;
         }
         return v.getArestas();
+    }
+    @Override
+    public String toString() {
+        StringBuilder resultado = new StringBuilder();
+
+        for (Aresta a : cacheArestas) {
+            resultado.append("A")
+                    .append(a.getId())
+                    .append(": V")
+                    .append(a.getU().getId())
+                    .append(" ------ V")
+                    .append(a.getV().getId())
+                    .append("\n");
+        }
+
+        return resultado.toString();
     }
 }
