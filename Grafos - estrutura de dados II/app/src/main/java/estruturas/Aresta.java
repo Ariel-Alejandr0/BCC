@@ -1,6 +1,7 @@
 package estruturas;
 
 public class Aresta {
+    //para digrafo trate u e v respectivamente como origem e destino
     private Vertice u;
     private Vertice v;
 
