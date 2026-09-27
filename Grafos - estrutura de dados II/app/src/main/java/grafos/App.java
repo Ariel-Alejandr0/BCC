@@ -1,9 +1,6 @@
 package grafos;
 
-import estruturas.Aresta;
-import estruturas.Digrafo;
-import estruturas.Grafo;
-import estruturas.Vertice;
+import estruturas.*;
 
 import java.util.List;
 
@@ -11,9 +8,134 @@ public class App {
 
     public static void main(String[] args) {
         //Atenção: bateria de testes criada com IA
-        testarGrafo();
-        testarDigrafo();
+        //testarGrafo();
+        //testarDigrafo();
+        testarBuscas();
+    }
 
+    public static void testarBuscaGrafo() {
+
+        System.out.println("\n------------------------------------");
+        System.out.println("      BUSCAS EM GRAFO");
+        System.out.println("------------------------------------");
+
+        Grafo grafo = new Grafo();
+
+        Vertice v1 = grafo.insereV();
+        Vertice v2 = grafo.insereV();
+        Vertice v3 = grafo.insereV();
+        Vertice v4 = grafo.insereV();
+
+        grafo.insereA(v1, v2);
+        grafo.insereA(v1, v3);
+        grafo.insereA(v2, v4);
+        grafo.insereA(v3, v4);
+
+        System.out.println("\n--- Busca em Profundidade ---");
+
+        ResultadoBusca resultadoDFS =
+                BuscaEmProfundidade.busca(grafo, v1);
+
+        resultadoDFS.imprimeTabela();
+
+        System.out.println("\nCaminho de V1 até V4:");
+        resultadoDFS.imprimeCaminho(v1, v4);
+
+
+        System.out.println("\n--- Busca em Largura ---");
+
+        ResultadoBusca resultadoBFS =
+                BuscaEmLargura.busca(grafo, v1);
+
+        resultadoBFS.imprimeTabela();
+
+        System.out.println("\nCaminho de V1 até V4:");
+        resultadoBFS.imprimeCaminho(v1, v4);
+    }
+
+    public static void testarBuscaDigrafo() {
+
+        System.out.println("\n------------------------------------");
+        System.out.println("      BUSCAS EM DIGRAFO");
+        System.out.println("------------------------------------");
+
+        Digrafo digrafo = new Digrafo();
+
+        Vertice v1 = digrafo.insereV();
+        Vertice v2 = digrafo.insereV();
+        Vertice v3 = digrafo.insereV();
+        Vertice v4 = digrafo.insereV();
+
+        digrafo.insereA(v1, v2);
+        digrafo.insereA(v1, v3);
+        digrafo.insereA(v2, v4);
+        digrafo.insereA(v3, v4);
+
+        System.out.println("\n--- Busca em Profundidade ---");
+
+        ResultadoBusca resultadoDFS =
+                BuscaEmProfundidade.busca(digrafo, v1);
+
+        resultadoDFS.imprimeTabela();
+
+        System.out.println("\nCaminho de V1 até V4:");
+        resultadoDFS.imprimeCaminho(v1, v4);
+
+
+        System.out.println("\n--- Busca em Largura ---");
+
+        ResultadoBusca resultadoBFS =
+                BuscaEmLargura.busca(digrafo, v1);
+
+        resultadoBFS.imprimeTabela();
+
+        System.out.println("\nCaminho de V1 até V4:");
+        resultadoBFS.imprimeCaminho(v1, v4);
+    }
+
+    public static void testarBuscaTodos() {
+
+        System.out.println("\n------------------------------------");
+        System.out.println("       BUSCA EM GRAFO DESCONEXO");
+        System.out.println("------------------------------------");
+
+        Grafo grafo = new Grafo();
+
+        Vertice v1 = grafo.insereV();
+        Vertice v2 = grafo.insereV();
+        Vertice v3 = grafo.insereV();
+        Vertice v4 = grafo.insereV();
+        Vertice v5 = grafo.insereV();
+
+        grafo.insereA(v1, v2);
+        grafo.insereA(v2, v3);
+
+        grafo.insereA(v4, v5);
+
+        System.out.println("\n--- Busca em Profundidade - Todos ---");
+
+        ResultadoBusca resultadoDFS =
+                BuscaEmProfundidade.buscaTodos(grafo);
+
+        resultadoDFS.imprimeTabela();
+
+        System.out.println("\n--- Busca em Largura ---");
+
+        ResultadoBusca resultadoBFS =
+                BuscaEmLargura.busca(grafo, v1);
+
+        resultadoBFS.imprimeTabela();
+    }
+
+    public static void testarBuscas() {
+
+        System.out.println("\n====================================");
+        System.out.println("          TESTE DAS BUSCAS");
+        System.out.println("====================================");
+
+        testarBuscaGrafo();
+        testarBuscaDigrafo();
+        testarBuscaTodos();
     }
 
     public static void testarGrafo() {

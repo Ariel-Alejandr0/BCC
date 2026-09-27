@@ -3,32 +3,8 @@ package estruturas;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Digrafo {
-    private int proximoId = 1;
-    private int proximoIdAresta = 1;
-    private List<Vertice> vertices = new ArrayList<Vertice>();
-    private List<Aresta> cacheArestas = new ArrayList<Aresta>();
-
-    public int getOrdem(){
-        return vertices.size();
-    }
-    public int getTamanho(){
-        return cacheArestas.size();
-    }
-    public List<Vertice> vertices() {
-        return vertices;
-    }
-
-    public List<Aresta> arestas() {
-        return cacheArestas;
-    }
-
-    public Vertice insereV(){
-        Vertice novoVertice = new Vertice(proximoId);
-        proximoId++;
-        vertices.add(novoVertice);
-        return novoVertice;
-    }
+public class Digrafo extends EstruturaGrafo{
+    @Override
     public Aresta insereA(Vertice u, Vertice v){
         if(!vertices.contains(u)){
             System.out.println("Vertice u não pertence ao grafo.");
@@ -45,6 +21,7 @@ public class Digrafo {
 
         return novaAresta;
     }
+
     public Aresta removeA(Aresta e){
         Vertice vOrigem = e.getU();
         Vertice vDestino = e.getV();
@@ -54,6 +31,7 @@ public class Digrafo {
         cacheArestas.remove(e);
         return e;
     }
+    @Override
     public Vertice removeV(Vertice v){
         if(!vertices.contains(v)){
             System.out.println("Vertice v não pertence ao grafo.");
@@ -72,6 +50,7 @@ public class Digrafo {
         vertices.remove(v);
         return v;
     }
+    @Override
     public List<Vertice> adj(Vertice v){
         List<Vertice> adjacentes = new ArrayList<Vertice>();
         if(!vertices.contains(v)){
@@ -83,6 +62,7 @@ public class Digrafo {
         }
         return adjacentes;
     }
+    @Override
     public Aresta getA(Vertice u, Vertice v){
         for(Aresta a : u.getArestasSaida()){
             if(a.getU() == u && a.getV() == v){
@@ -100,6 +80,7 @@ public class Digrafo {
     public List<Vertice> verticesA(Aresta e){
         return List.of(e.getU(), e.getV());
     }
+    @Override
     public Vertice oposto(Vertice v, Aresta e){
         if(v == e.getU()){
             return e.getV();
