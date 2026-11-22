@@ -8,6 +8,10 @@
 #   ld bruteforce_full.o -o bruteforce_full
 #   ./bruteforce_full
 #
+# Velocidade maxima (sem atraso, tela atualizada a cada 2^16 tentativas):
+#   as --defsym DELAY_NS=0 bruteforce_full.s -o bruteforce_full.o
+# Outros ajustes na montagem: --defsym SHOW_SHIFT=k (atualiza a cada 2^k).
+#
 # Algoritmo: gera candidatos em ordem crescente de tamanho (1, 2, 3, ...).
 # Para cada tamanho, percorre todas as combinacoes possiveis (como um
 # odometro, incrementando o ultimo caractere e "vaiando" pro anterior
@@ -15,7 +19,17 @@
 # So avanca pro proximo tamanho depois de esgotar TODAS as combinacoes
 # do tamanho atual. Alfabeto usado: ASCII imprimivel (bytes 32 a 126).
 
-.equ DELAY_NS, 1000000     # pausa entre tentativas (1 ms). Use 0 para maxima velocidade
+.ifndef DELAY_NS
+.equ DELAY_NS, 1000000     # pausa por atualizacao de tela (1 ms); --defsym DELAY_NS=0 desliga
+.endif
+.ifndef SHOW_SHIFT          # tela atualizada a cada 2^SHOW_SHIFT tentativas (spec 05)
+.if DELAY_NS > 0
+.equ SHOW_SHIFT, 0          # com atraso: mostra toda tentativa (animacao visivel)
+.else
+.equ SHOW_SHIFT, 16         # sem atraso: so de vez em quando, o resto e' CPU pura
+.endif
+.endif
+.equ SHOW_MASK, (1 << SHOW_SHIFT) - 1
 .equ MAX_LEN, 255
 .equ ALPHA_MIN, 32
 .equ ALPHA_MAX, 126         # ASCII imprimivel (95 simbolos); ver docs/02
@@ -47,17 +61,19 @@ msg_invalid:
 nl:
     .byte 10
 
+# clrline e cand ficam colados: um unico write(clrline, clrline_len + clen)
+# limpa a linha e mostra o candidato (spec 05)
 clrline:
     .byte 0x1b, '[', '2', 'K', 13   # ESC [ 2K <CR>  (limpa a linha e volta ao inicio)
     .equ clrline_len, . - clrline
+cand:
+    .skip MAX_LEN + 1
 
 ts:
     .quad 0, DELAY_NS
 
 .section .bss
 input:
-    .skip MAX_LEN + 1
-cand:
     .skip MAX_LEN + 1
 numbuf:
     .skip 24
@@ -120,20 +136,12 @@ validate_ok:
     call print_len_msg
 
 main_loop:
-    # limpa a linha e mostra o candidato atual
-    mov eax, 1
-    mov edi, 1
-    lea rsi, [rip + clrline]
-    mov edx, clrline_len
-    syscall
-
-    mov eax, 1
-    mov edi, 1
-    lea rsi, [rip + cand]
-    mov rdx, r14
-    syscall
-
     inc r12
+.if SHOW_MASK > 0
+    test r12, SHOW_MASK              # so atualiza a tela a cada 2^SHOW_SHIFT
+    jnz skip_show
+.endif
+    call show_cand
 
 .if DELAY_NS > 0
     mov eax, 35
@@ -141,6 +149,7 @@ main_loop:
     xor esi, esi
     syscall
 .endif
+skip_show:
 
     cmp r14, r13                     # so pode bater se o tamanho for igual
     jne no_match
@@ -184,6 +193,7 @@ len_grown_done:
     jmp main_loop
 
 done_found:
+    call show_cand                   # garante que o candidato final aparece
     mov eax, 1
     mov edi, 1
     lea rsi, [rip + msg_found]
@@ -238,6 +248,14 @@ invalid_input:                       # r15 = indice do byte invalido
     syscall
 
 # ---- sub-rotinas ----
+
+show_cand:                           # limpa a linha e mostra cand (1 write)
+    mov eax, 1
+    mov edi, 1
+    lea rsi, [rip + clrline]
+    lea rdx, [r14 + clrline_len]
+    syscall
+    ret
 
 print_len_msg:
     push rax
