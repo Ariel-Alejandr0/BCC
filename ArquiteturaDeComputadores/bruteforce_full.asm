@@ -13,12 +13,12 @@
 # odometro, incrementando o ultimo caractere e "vaiando" pro anterior
 # quando estoura) ate comparar a string inteira com o que foi digitado.
 # So avanca pro proximo tamanho depois de esgotar TODAS as combinacoes
-# do tamanho atual. Alfabeto usado: bytes 32 a 255.
+# do tamanho atual. Alfabeto usado: ASCII imprimivel (bytes 32 a 126).
 
 .equ DELAY_NS, 1000000     # pausa entre tentativas (1 ms). Use 0 para maxima velocidade
 .equ MAX_LEN, 255
 .equ ALPHA_MIN, 32
-.equ ALPHA_MAX, 255
+.equ ALPHA_MAX, 126         # ASCII imprimivel (95 simbolos); ver docs/02
 
 .section .data
 prompt:
