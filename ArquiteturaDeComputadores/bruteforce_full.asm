@@ -8,6 +8,9 @@
 #   ld bruteforce_full.o -o bruteforce_full
 #   ./bruteforce_full
 #
+# Velocidade maxima (sem atraso, tela atualizada a cada 2^16 tentativas):
+#   as --defsym DELAY_NS=0 bruteforce_full.asm -o bruteforce_full.o
+# Outros ajustes na montagem: --defsym SHOW_SHIFT=k (atualiza a cada 2^k).
 # Codigos de saida (spec 09): 0 encontrado, 1 entrada vazia/EOF,
 # 2 erro de leitura, 3 entrada invalida, 4 nao encontrado.
 #
@@ -17,12 +20,30 @@
 # quando estoura) ate comparar a string inteira com o que foi digitado.
 # So avanca pro proximo tamanho depois de esgotar TODAS as combinacoes
 # do tamanho atual. Alfabeto usado: ASCII imprimivel (bytes 32 a 126).
+#
+# Numero de tentativas (spec 06): com alfabeto de tamanho A e entrada de n
+# caracteres,
+#   T = soma_{k=1}^{n-1} A^k + pos(entrada) + 1
+# onde pos e' a entrada lida como numero na base A (digito = byte - ALPHA_MIN).
+# O programa calcula T antes da busca e mostra ao lado do contador real
+# (se T nao couber em 64 bits, mostra "nao cabe em 64 bits").
 
-.equ DELAY_NS, 1000000     # pausa entre tentativas (1 ms). Use 0 para maxima velocidade
+.ifndef DELAY_NS
+.equ DELAY_NS, 1000000     # pausa por atualizacao de tela (1 ms); --defsym DELAY_NS=0 desliga
+.endif
+.ifndef SHOW_SHIFT          # tela atualizada a cada 2^SHOW_SHIFT tentativas (spec 05)
+.if DELAY_NS > 0
+.equ SHOW_SHIFT, 0          # com atraso: mostra toda tentativa (animacao visivel)
+.else
+.equ SHOW_SHIFT, 16         # sem atraso: so de vez em quando, o resto e' CPU pura
+.endif
+.endif
+.equ SHOW_MASK, (1 << SHOW_SHIFT) - 1
 .equ MAX_LEN, 255
 .equ DRAIN_LEN, 64           # buffer para descartar o excedente da linha
 .equ ALPHA_MIN, 32
 .equ ALPHA_MAX, 126         # ASCII imprimivel (95 simbolos); ver docs/02
+.equ ALPHA_SIZE, ALPHA_MAX - ALPHA_MIN + 1
 
 .section .data
 prompt:
@@ -38,6 +59,17 @@ msg_tries:
     .byte 10
     .ascii "Tentativas totais: "
     .equ msg_tries_len, . - msg_tries
+
+msg_expected:
+    .ascii " (esperado pela formula: "
+    .equ msg_expected_len, . - msg_expected
+
+msg_overflow:
+    .ascii "nao cabe em 64 bits"
+    .equ msg_overflow_len, . - msg_overflow
+
+paren_close:
+    .byte ')'
 
 msg_len:
     .byte 10
@@ -59,9 +91,13 @@ msg_notfound:
 nl:
     .byte 10
 
+# clrline e cand ficam colados: um unico write(clrline, clrline_len + clen)
+# limpa a linha e mostra o candidato (spec 05)
 clrline:
     .byte 0x1b, '[', '2', 'K', 13   # ESC [ 2K <CR>  (limpa a linha e volta ao inicio)
     .equ clrline_len, . - clrline
+cand:
+    .skip MAX_LEN + 1
 
 ts:
     .quad 0, DELAY_NS
@@ -69,10 +105,10 @@ ts:
 .section .bss
 input:
     .skip MAX_LEN + 1
-cand:
-    .skip MAX_LEN + 1
 numbuf:
     .skip 24
+expected:
+    .skip 8                          # T pela formula; 0 = estourou 64 bits
 drainbuf:
     .skip DRAIN_LEN
 
@@ -169,6 +205,7 @@ validate_loop:
     inc r15
     jmp validate_loop
 validate_ok:
+    call calc_expected
 
     mov r14, 1                      # r14 = tamanho do candidato atual (clen)
     xor r12, r12                    # r12 = total de tentativas
@@ -178,20 +215,12 @@ validate_ok:
     call print_len_msg
 
 main_loop:
-    # limpa a linha e mostra o candidato atual
-    mov eax, 1
-    mov edi, 1
-    lea rsi, [rip + clrline]
-    mov edx, clrline_len
-    syscall
-
-    mov eax, 1
-    mov edi, 1
-    lea rsi, [rip + cand]
-    mov rdx, r14
-    syscall
-
     inc r12
+.if SHOW_MASK > 0
+    test r12, SHOW_MASK              # so atualiza a tela a cada 2^SHOW_SHIFT
+    jnz skip_show
+.endif
+    call show_cand
 
 .if DELAY_NS > 0
     mov eax, 35
@@ -199,6 +228,7 @@ main_loop:
     xor esi, esi
     syscall
 .endif
+skip_show:
 
     cmp r14, r13                     # so pode bater se o tamanho for igual
     jne no_match
@@ -246,6 +276,7 @@ len_grown_done:
     jmp main_loop
 
 done_found:
+    call show_cand                   # garante que o candidato final aparece
     mov eax, 1
     mov edi, 1
     lea rsi, [rip + msg_found]
@@ -266,6 +297,29 @@ done_found:
 
     mov rax, r12
     call print_number
+
+    mov eax, 1
+    mov edi, 1
+    lea rsi, [rip + msg_expected]
+    mov edx, msg_expected_len
+    syscall
+
+    mov rax, [rip + expected]
+    test rax, rax
+    jz exp_overflow
+    call print_number                # edi = 1 (do write acima)
+    jmp exp_close
+exp_overflow:
+    mov eax, 1
+    lea rsi, [rip + msg_overflow]
+    mov edx, msg_overflow_len
+    syscall
+exp_close:
+    mov eax, 1
+    mov edi, 1
+    lea rsi, [rip + paren_close]
+    mov edx, 1
+    syscall
 
     mov eax, 1
     mov edi, 1
@@ -320,6 +374,61 @@ invalid_input:                       # r15 = indice do byte invalido
     syscall
 
 # ---- sub-rotinas ----
+
+show_cand:                           # limpa a linha e mostra cand (1 write)
+    mov eax, 1
+    mov edi, 1
+    lea rsi, [rip + clrline]
+    lea rdx, [r14 + clrline_len]
+    syscall
+    ret
+
+calc_expected:                       # expected = soma_{k=1}^{n-1} A^k + pos + 1 (0 se estourar)
+    push rbx
+    mov ecx, ALPHA_SIZE
+    xor r8, r8                       # r8 = soma das potencias
+    mov r9, 1                        # r9 = A^k
+    mov r10, 1                       # r10 = k
+ce_pow:
+    cmp r10, r13
+    jae ce_pos
+    mov rax, r9
+    mul rcx
+    jc ce_over                       # CF=1: parte alta de rdx:rax nao e' zero
+    mov r9, rax
+    add r8, rax
+    jc ce_over
+    inc r10
+    jmp ce_pow
+ce_pos:                              # Horner: pos = pos*A + digito
+    lea rbx, [rip + input]
+    xor r9, r9
+    xor r10, r10
+ce_digit:
+    cmp r10, r13
+    jae ce_sum
+    mov rax, r9
+    mul rcx
+    jc ce_over
+    movzx edx, byte ptr [rbx + r10]
+    sub edx, ALPHA_MIN
+    add rax, rdx
+    jc ce_over
+    mov r9, rax
+    inc r10
+    jmp ce_digit
+ce_sum:
+    add r8, r9
+    jc ce_over
+    add r8, 1
+    jc ce_over
+    jmp ce_store
+ce_over:
+    xor r8, r8
+ce_store:
+    mov [rip + expected], r8
+    pop rbx
+    ret
 
 print_len_msg:
     push rax
