@@ -1,12 +1,15 @@
 .intel_syntax noprefix
-# bruteforce_full.s - "Adivinha" o texto digitado comparando a FRASE INTEIRA
+# bruteforce_full.asm - "Adivinha" o texto digitado comparando a FRASE INTEIRA
 # (nao caractere por caractere). Sem limite de tamanho: se demorar, demora.
 # x86-64 Linux, GNU "as"
 #
 # Montar e rodar:
-#   as bruteforce_full.s -o bruteforce_full.o
+#   as bruteforce_full.asm -o bruteforce_full.o
 #   ld bruteforce_full.o -o bruteforce_full
 #   ./bruteforce_full
+#
+# Codigos de saida (spec 09): 0 encontrado, 1 entrada vazia/EOF,
+# 2 erro de leitura, 3 entrada invalida, 4 nao encontrado.
 #
 # Algoritmo: gera candidatos em ordem crescente de tamanho (1, 2, 3, ...).
 # Para cada tamanho, percorre todas as combinacoes possiveis (como um
@@ -48,6 +51,10 @@ msg_invalid:
 msg_trunc:
     .ascii "Aviso: entrada maior que 255 caracteres; usando apenas os 255 primeiros.\n"
     .equ msg_trunc_len, . - msg_trunc
+
+msg_notfound:
+    .ascii "\nErro: todas as combinacoes ate o tamanho da entrada foram testadas sem sucesso.\n"
+    .equ msg_notfound_len, . - msg_notfound
 
 nl:
     .byte 10
@@ -146,7 +153,7 @@ drain_done:
 
 read_done:
     test r13, r13
-    jz exit_prog
+    jz empty_input
 
     # valida: todo byte da entrada precisa estar no alfabeto, senao a busca
     # nunca terminaria (spec 01)
@@ -222,6 +229,10 @@ wrap_this:
     jmp inc_loop
 
 grow_length:
+    # spec 08: nunca passa do tamanho da entrada (<= MAX_LEN), evitando
+    # escrever alem de cand e testar tamanhos que nao podem bater
+    cmp r14, r13
+    jae not_found
     inc r14
     xor r15, r15
 reset_loop:
@@ -264,7 +275,22 @@ done_found:
 
 exit_prog:
     mov eax, 60
-    xor edi, edi
+    xor edi, edi                     # codigo 0 = encontrado
+    syscall
+
+empty_input:
+    mov eax, 60
+    mov edi, 1                       # codigo 1 = entrada vazia/EOF (spec 09)
+    syscall
+
+not_found:                           # spec 08: tamanhos esgotados sem achar
+    mov eax, 1
+    mov edi, 2
+    lea rsi, [rip + msg_notfound]
+    mov edx, msg_notfound_len
+    syscall
+    mov eax, 60
+    mov edi, 4                       # codigo 4 = nao encontrado (spec 09)
     syscall
 
 read_error:
