@@ -4,12 +4,12 @@
 # x86-64 Linux, GNU "as"
 #
 # Montar e rodar:
-#   as bruteforce_full.asm -o bruteforce_full.o
-#   ld bruteforce_full.o -o bruteforce_full
-#   ./bruteforce_full
+#   make run                 (ou: as bruteforce_full.asm -o bruteforce_full.o
+#                                 ld bruteforce_full.o -o bruteforce_full
+#                                 ./bruteforce_full)
 #
 # Velocidade maxima (sem atraso, tela atualizada a cada 2^16 tentativas):
-#   as --defsym DELAY_NS=0 bruteforce_full.asm -o bruteforce_full.o
+#   make DELAY_NS=0          (ou: as --defsym DELAY_NS=0 bruteforce_full.asm ...)
 # Outros ajustes na montagem: --defsym SHOW_SHIFT=k (atualiza a cada 2^k).
 # Codigos de saida (spec 09): 0 encontrado, 1 entrada vazia/EOF,
 # 2 erro de leitura, 3 entrada invalida, 4 nao encontrado.
@@ -374,8 +374,14 @@ invalid_input:                       # r15 = indice do byte invalido
     syscall
 
 # ---- sub-rotinas ----
+# Contrato (spec 07): entradas, saidas e registradores destruidos de cada uma.
+# Registradores de estado do laco principal (rbx, r12-r15) nunca sao destruidos.
 
-show_cand:                           # limpa a linha e mostra cand (1 write)
+# show_cand: limpa a linha e mostra cand com um unico write.
+#   entrada: r14 = tamanho do candidato
+#   saida:   nenhuma
+#   destroi: rax, rdi, rsi, rdx, rcx, r11
+show_cand:
     mov eax, 1
     mov edi, 1
     lea rsi, [rip + clrline]
@@ -383,7 +389,11 @@ show_cand:                           # limpa a linha e mostra cand (1 write)
     syscall
     ret
 
-calc_expected:                       # expected = soma_{k=1}^{n-1} A^k + pos + 1 (0 se estourar)
+# calc_expected: expected = soma_{k=1}^{n-1} A^k + pos + 1 (0 se estourar 64 bits).
+#   entrada: r13 = tamanho da entrada, input = bytes validados
+#   saida:   [expected]
+#   destroi: rax, rcx, rdx, r8, r9, r10 (preserva rbx)
+calc_expected:
     push rbx
     mov ecx, ALPHA_SIZE
     xor r8, r8                       # r8 = soma das potencias
@@ -430,8 +440,11 @@ ce_store:
     pop rbx
     ret
 
+# print_len_msg: imprime "\nTestando tamanho <r14>\n" no stdout.
+#   entrada: r14 = tamanho atual
+#   saida:   nenhuma
+#   destroi: rax, rdi, rsi, rdx, rcx, r11
 print_len_msg:
-    push rax
     mov eax, 1
     mov edi, 1
     lea rsi, [rip + msg_len]
@@ -444,14 +457,13 @@ print_len_msg:
     lea rsi, [rip + nl]
     mov edx, 1
     syscall
-    pop rax
     ret
 
-print_number:                        # imprime o numero em rax no descritor rdi, sem quebra de linha
-    push rbx
-    push rcx
-    push rdx
-    push rsi
+# print_number: imprime rax em decimal no descritor rdi, sem quebra de linha.
+#   entrada: rax = numero, rdi = descritor
+#   saida:   nenhuma (rdi continua igual)
+#   destroi: rax, rcx, rdx, rsi, r11
+print_number:
     lea rsi, [rip + numbuf]
     add rsi, 23
     mov rcx, 10
@@ -468,8 +480,4 @@ pn_digit:
     sub rdx, rsi
     mov eax, 1                       # rdi = descritor, definido por quem chama
     syscall
-    pop rsi
-    pop rdx
-    pop rcx
-    pop rbx
     ret
