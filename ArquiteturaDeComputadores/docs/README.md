@@ -5,7 +5,7 @@ Cada arquivo descreve um problema encontrado na revisão, com o comportamento es
 | # | Spec | Categoria | Prioridade | Status |
 |---|------|-----------|------------|--------|
 | 01 | [Validação do alfabeto na entrada](01-validacao-alfabeto.md) | Bug | Alta | Resolvido |
-| 02 | [Alfabeto inclui bytes não imprimíveis](02-alfabeto-imprimivel.md) | Bug | Alta | Aberto |
+| 02 | [Alfabeto inclui bytes não imprimíveis](02-alfabeto-imprimivel.md) | Bug | Alta | Resolvido |
 | 03 | [Entrada longa truncada e vazamento no stdin](03-entrada-longa.md) | Bug | Alta | Aberto |
 | 04 | [Comentário de montagem com nome errado](04-comentario-montagem.md) | Documentação | Baixa | Aberto |
 | 05 | [Custo de syscalls por tentativa](05-desempenho-syscalls.md) | Desempenho | Média | Aberto |
