@@ -16,3 +16,4 @@ A ordem de execução está em [WAVES.md](WAVES.md).
 | 08 | [Guarda de tamanho máximo em grow_length](08-guarda-max-len.md) | Robustez | Baixa | 1 | Resolvido |
 | 09 | [Código de saída em caso de erro](09-codigo-saida.md) | Bug | Média | 1 | Resolvido |
 | 10 | [Artefatos de build no repositório](10-gitignore.md) | Repositório | Baixa | 3 | Resolvido |
+| 11 | [Tempo gasto para encontrar a senha](11-tempo-busca.md) | Feature | Baixa | — | Aberto |
