@@ -27,6 +27,11 @@
 # onde pos e' a entrada lida como numero na base A (digito = byte - ALPHA_MIN).
 # O programa calcula T antes da busca e mostra ao lado do contador real
 # (se T nao couber em 64 bits, mostra "nao cabe em 64 bits").
+#
+# Tempo (spec 11): clock_gettime(CLOCK_MONOTONIC) logo antes de main_loop e
+# na entrada de done_found; mostra "Tempo para encontrar: N ms". A medida
+# inclui as pausas de DELAY_NS e as atualizacoes de tela (tempo percebido),
+# mas nao a digitacao. Nao e' impresso no caminho "nao encontrado".
 
 .ifndef DELAY_NS
 .equ DELAY_NS, 1000000     # pausa por atualizacao de tela (1 ms); --defsym DELAY_NS=0 desliga
@@ -67,6 +72,14 @@ msg_expected:
 msg_overflow:
     .ascii "nao cabe em 64 bits"
     .equ msg_overflow_len, . - msg_overflow
+
+msg_time:
+    .ascii "Tempo para encontrar: "
+    .equ msg_time_len, . - msg_time
+
+msg_ms:
+    .ascii " ms\n"
+    .equ msg_ms_len, . - msg_ms
 
 paren_close:
     .byte ')'
@@ -111,6 +124,13 @@ expected:
     .skip 8                          # T pela formula; 0 = estourou 64 bits
 drainbuf:
     .skip DRAIN_LEN
+    .balign 8
+t_start:
+    .skip 16                         # struct timespec (tv_sec, tv_nsec), spec 11
+t_end:
+    .skip 16
+t_fail:
+    .skip 1                          # 1 = algum clock_gettime falhou
 
 .section .text
 .global _start
@@ -214,6 +234,15 @@ validate_ok:
 
     call print_len_msg
 
+    # spec 11: cronometro comeca aqui (depois da leitura/validacao/calc_expected)
+    mov eax, 228                     # clock_gettime
+    mov edi, 1                       # CLOCK_MONOTONIC
+    lea rsi, [rip + t_start]
+    syscall
+    test rax, rax
+    jns main_loop
+    mov byte ptr [rip + t_fail], 1
+
 main_loop:
     inc r12
 .if SHOW_MASK > 0
@@ -276,6 +305,15 @@ len_grown_done:
     jmp main_loop
 
 done_found:
+    # spec 11: para o cronometro antes de qualquer write do relatorio
+    mov eax, 228
+    mov edi, 1
+    lea rsi, [rip + t_end]
+    syscall
+    test rax, rax
+    jns df_report
+    mov byte ptr [rip + t_fail], 1
+df_report:
     call show_cand                   # garante que o candidato final aparece
     mov eax, 1
     mov edi, 1
@@ -325,6 +363,32 @@ exp_close:
     mov edi, 1
     lea rsi, [rip + nl]
     mov edx, 1
+    syscall
+
+    # spec 11: ms = (fim.sec - ini.sec)*1000 + (fim.nsec - ini.nsec)/1e6
+    cmp byte ptr [rip + t_fail], 0
+    jne exit_prog                    # relogio falhou: omite a linha
+    mov eax, 1
+    mov edi, 1
+    lea rsi, [rip + msg_time]
+    mov edx, msg_time_len
+    syscall
+    mov rax, [rip + t_end]
+    sub rax, [rip + t_start]
+    imul rax, rax, 1000              # rax = diferenca de segundos em ms
+    mov rcx, rax
+    mov rax, [rip + t_end + 8]
+    sub rax, [rip + t_start + 8]     # pode ser negativo
+    cqo
+    mov r8, 1000000
+    idiv r8                          # trunca em direcao a zero
+    add rax, rcx                     # total >= 0 (relogio monotonico)
+    mov edi, 1
+    call print_number
+    mov eax, 1
+    mov edi, 1
+    lea rsi, [rip + msg_ms]
+    mov edx, msg_ms_len
     syscall
 
 exit_prog:
